@@ -32,6 +32,12 @@ struct MenuItem {
     double price;
 };
 
+// Cart Item
+struct CartItem {
+    MenuItem item;
+    int quantity;
+};
+
 // Restaurant Module
 class Restaurant {
 public:
@@ -39,16 +45,16 @@ public:
     vector<MenuItem> menu;
 
     Restaurant(string rname) : name(rname) {
-        menu.push_back({"Burger", 149.00});
-        menu.push_back({"Pizza", 299.00});
-        menu.push_back({"Pasta", 199.00});
-        menu.push_back({"French Fries", 299.00});
-        menu.push_back({"Veg Noodles", 150.00});
-        menu.push_back({"Fried Rice", 239.00});
-        menu.push_back({"Shawarma", 129.00});
-        menu.push_back({"Chicken Noodles", 159.00});
-        menu.push_back({"Veg Biriyani", 49.00});
-        menu.push_back({"Chicken Biriyani", 49.00});
+        menu.push_back(MenuItem{"Burger", 149.00});
+        menu.push_back(MenuItem{"Pizza", 299.00});
+        menu.push_back(MenuItem{"Pasta", 199.00});
+        menu.push_back(MenuItem{"French Fries", 299.00});
+        menu.push_back(MenuItem{"Veg Noodles", 150.00});
+        menu.push_back(MenuItem{"Fried Rice", 239.00});
+        menu.push_back(MenuItem{"Shawarma", 129.00});
+        menu.push_back(MenuItem{"Chicken Noodles", 159.00});
+        menu.push_back(MenuItem{"Veg Biriyani", 49.00});
+        menu.push_back(MenuItem{"Chicken Biriyani", 49.00});
     }
 
     void displayMenu() {
@@ -73,29 +79,31 @@ public:
 // Cart Module
 class Cart {
 public:
-    vector<MenuItem> items;
+    vector<CartItem> items;
 
-    void addItem(MenuItem item) {
-        if (item.name != "Invalid") {
-            items.push_back(item);
-            cout << item.name << " added to cart.\n";
+    void addItem(MenuItem item, int quantity) {
+        if (item.name != "Invalid" && quantity > 0) {
+            items.push_back(CartItem{item, quantity});
+            cout << item.name << " × " << quantity << " added to cart.\n";
         }
     }
 
     void showCart() {
         cout << "\n--- Cart Items ---\n";
         double total = 0.0;
-        for (const auto& item : items) {
-            cout << "- " << item.name << ": ₹" << fixed << setprecision(2) << item.price << endl;
-            total += item.price;
+        for (const auto& cartItem : items) {
+            double subtotal = cartItem.item.price * cartItem.quantity;
+            cout << "- " << cartItem.item.name << " × " << cartItem.quantity
+                 << ": ₹" << fixed << setprecision(2) << subtotal << endl;
+            total += subtotal;
         }
         cout << "Total: ₹" << fixed << setprecision(2) << total << endl;
     }
 
     double getTotal() {
         double total = 0.0;
-        for (const auto& item : items)
-            total += item.price;
+        for (const auto& cartItem : items)
+            total += cartItem.item.price * cartItem.quantity;
         return total;
     }
 
@@ -112,10 +120,10 @@ public:
 class Order {
 public:
     User user;
-    vector<MenuItem> items;
+    vector<CartItem> items;
     string status;
 
-    Order(User u, vector<MenuItem> i) : user(u), items(i), status("Placed") {}
+    Order(User u, vector<CartItem> i) : user(u), items(i), status("Placed") {}
 
     void displayOrder() {
         cout << "\n--- Order Summary ---\n";
@@ -124,9 +132,11 @@ public:
         cout << "Address: " << user.address << "\n";
         cout << "Items:\n";
         double total = 0;
-        for (const auto& item : items) {
-            cout << "- " << item.name << ": ₹" << fixed << setprecision(2) << item.price << endl;
-            total += item.price;
+        for (const auto& cartItem : items) {
+            double subtotal = cartItem.item.price * cartItem.quantity;
+            cout << "- " << cartItem.item.name << " × " << cartItem.quantity
+                 << ": ₹" << fixed << setprecision(2) << subtotal << endl;
+            total += subtotal;
         }
         cout << "Total: ₹" << fixed << setprecision(2) << total << endl;
         cout << "Order Status: " << status << endl;
@@ -166,7 +176,7 @@ int main() {
 
     // Name input with validation
     do {
-        cout << "Enter your name (alphabets only): ";
+        cout << "Enter your name: ";
         getline(cin, name);
         if (!User::isValidName(name)) {
             cout << "Invalid name. Please enter alphabets only.\n";
@@ -179,7 +189,7 @@ int main() {
 
     // Mobile input with validation
     do {
-        cout << "Enter your 10-digit mobile number: ";
+        cout << "Enter your mobile number: ";
         getline(cin, mobile);
         if (!User::isValidMobile(mobile)) {
             cout << "Invalid mobile number. Please enter exactly 10 numeric digits.\n";
@@ -197,7 +207,14 @@ int main() {
     cout << "\nEnter item number to add to cart (0 to finish): ";
     while (cin >> choice && choice != 0) {
         if (rest.isValidChoice(choice - 1)) {
-            cart.addItem(rest.getItem(choice - 1));
+            int quantity;
+            cout << "Enter quantity: ";
+            cin >> quantity;
+            if (quantity <= 0) {
+                cout << "Quantity must be greater than 0.\n";
+                continue;
+            }
+            cart.addItem(rest.getItem(choice - 1), quantity);
         } else {
             cout << "Enter a valid choice.\n";
         }
@@ -235,3 +252,4 @@ int main() {
     cout << "\nThank you for using our Food Ordering App!\n";
     return 0;
 }
+
