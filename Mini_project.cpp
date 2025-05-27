@@ -53,15 +53,15 @@ public:
         menu.push_back(MenuItem{"Fried Rice", 239.00});
         menu.push_back(MenuItem{"Shawarma", 129.00});
         menu.push_back(MenuItem{"Chicken Noodles", 159.00});
-        menu.push_back(MenuItem{"Veg Biriyani", 49.00});
-        menu.push_back(MenuItem{"Chicken Biriyani", 49.00});
+        menu.push_back(MenuItem{"Veg Biriyani", 349.00});
+        menu.push_back(MenuItem{"Chicken Biriyani", 399.00});
     }
 
     void displayMenu() {
         cout << "\n--- Menu for " << name << " ---\n";
-        cout << left << setw(5) << "No." << setw(18) << "Item" << "Price (INR)\n";
+        cout << left << setw(5) << "No." << setw(20) << "Item" << "Price (INR)\n";
         for (int i = 0; i < menu.size(); i++) {
-            cout << setw(5) << i + 1 << setw(18) << menu[i].name << "₹" << fixed << setprecision(2) << menu[i].price << endl;
+            cout << setw(5) << i + 1 << setw(20) << menu[i].name << "₹" << fixed << setprecision(2) << menu[i].price << endl;
         }
     }
 
@@ -83,7 +83,7 @@ public:
 
     void addItem(MenuItem item, int quantity) {
         if (item.name != "Invalid" && quantity > 0) {
-            items.push_back(CartItem{item, quantity});
+            items.push_back({item, quantity});
             cout << item.name << " × " << quantity << " added to cart.\n";
         }
     }
@@ -97,14 +97,38 @@ public:
                  << ": ₹" << fixed << setprecision(2) << subtotal << endl;
             total += subtotal;
         }
-        cout << "Total: ₹" << fixed << setprecision(2) << total << endl;
+
+        double discount = 0.0;
+
+        if (total > 3000)
+            discount = total * 0.15;
+        else if (total > 2000)
+            discount = total * 0.10;
+        else if (total > 1000)
+            discount = total * 0.05;
+
+        if (discount > 0.0) {
+            cout << "Subtotal: ₹" << fixed << setprecision(2) << total << endl;
+            cout << "Discount Applied: ₹" << fixed << setprecision(2) << discount << endl;
+            cout << "Total After Discount: ₹" << fixed << setprecision(2) << total - discount << endl;
+        } else {
+            cout << "Total: ₹" << fixed << setprecision(2) << total << endl;
+        }
     }
 
     double getTotal() {
         double total = 0.0;
         for (const auto& cartItem : items)
             total += cartItem.item.price * cartItem.quantity;
-        return total;
+
+        if (total > 3000)
+            return total * 0.85;
+        else if (total > 2000)
+            return total * 0.90;
+        else if (total > 1000)
+            return total * 0.95;
+        else
+            return total;
     }
 
     bool isEmpty() {
@@ -138,7 +162,22 @@ public:
                  << ": ₹" << fixed << setprecision(2) << subtotal << endl;
             total += subtotal;
         }
-        cout << "Total: ₹" << fixed << setprecision(2) << total << endl;
+
+        double discount = 0.0;
+        if (total > 3000)
+            discount = total * 0.15;
+        else if (total > 2000)
+            discount = total * 0.10;
+        else if (total > 1000)
+            discount = total * 0.05;
+
+        if (discount > 0.0) {
+            cout << "Subtotal: ₹" << total << "\n";
+            cout << "Discount: ₹" << discount << "\n";
+            total -= discount;
+        }
+
+        cout << "Total: ₹" << total << endl;
         cout << "Order Status: " << status << endl;
     }
 };
@@ -192,7 +231,7 @@ int main() {
         cout << "Enter your mobile number: ";
         getline(cin, mobile);
         if (!User::isValidMobile(mobile)) {
-            cout << "Invalid mobile number. Please enter exactly 10 numeric digits.\n";
+            cout << "Invalid mobile number. Please enter exactly 10 digits.\n";
         }
     } while (!User::isValidMobile(mobile));
 
@@ -203,15 +242,14 @@ int main() {
     user.display();
     rest.displayMenu();
 
-    int choice;
+    int choice, quantity;
     cout << "\nEnter item number to add to cart (0 to finish): ";
     while (cin >> choice && choice != 0) {
         if (rest.isValidChoice(choice - 1)) {
-            int quantity;
             cout << "Enter quantity: ";
             cin >> quantity;
             if (quantity <= 0) {
-                cout << "Quantity must be greater than 0.\n";
+                cout << "Invalid quantity. Must be greater than 0.\n";
                 continue;
             }
             cart.addItem(rest.getItem(choice - 1), quantity);
@@ -252,4 +290,3 @@ int main() {
     cout << "\nThank you for using our Food Ordering App!\n";
     return 0;
 }
-
